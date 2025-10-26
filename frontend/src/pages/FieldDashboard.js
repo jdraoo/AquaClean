@@ -115,7 +115,7 @@ const FieldDashboard = () => {
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2" data-testid="field-dashboard-title">
-            Welcome, {user?.name}!
+            Welcome, {contextUser?.name}!
           </h1>
           <p className="text-gray-600">Here are your assigned jobs</p>
         </div>
