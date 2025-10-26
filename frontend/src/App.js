@@ -12,6 +12,10 @@ import Auth from './pages/Auth';
 import FieldAuth from './pages/FieldAuth';
 import FieldDashboard from './pages/FieldDashboard';
 import JobExecution from './pages/JobExecution';
+import AdminAuth from './pages/AdminAuth';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminBookings from './pages/AdminBookings';
+import AdminUsers from './pages/AdminUsers';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
