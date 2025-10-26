@@ -36,9 +36,14 @@ const AdminBookings = () => {
 
   const fetchData = async () => {
     try {
+      const token = localStorage.getItem('token');
       const [bookingsRes, techRes] = await Promise.all([
-        axios.get(`${API}/admin/bookings`),
-        axios.get(`${API}/admin/field-teams`)
+        axios.get(`${API}/admin/bookings`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API}/admin/field-teams`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
       ]);
       setBookings(bookingsRes.data);
       setTechnicians(techRes.data);
