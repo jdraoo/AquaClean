@@ -43,7 +43,7 @@ const LandingPage = () => {
           </p>
           <Button
             size="lg"
-            onClick={() => navigate('/auth')}
+            onClick={() => navigate('/login')}
             className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl"
             data-testid="hero-get-started-btn"
           >
