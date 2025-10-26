@@ -166,7 +166,7 @@ const JobExecution = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
         <div className="text-center">
           <p className="text-xl text-gray-700 mb-4">Job not found</p>
-          <Button onClick={() => navigate('/field/dashboard')} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={() => navigate('/dashboard')} className="bg-blue-600 hover:bg-blue-700">
             Back to Dashboard
           </Button>
         </div>
