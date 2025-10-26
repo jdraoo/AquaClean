@@ -19,7 +19,7 @@ const API = `${BACKEND_URL}/api`;
 
 const BookService = () => {
   const navigate = useNavigate();
-  const [Razorpay] = useRazorpay();
+  // const [Razorpay] = useRazorpay();
   const [step, setStep] = useState(1);
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(false);
