@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-import { Droplets, Calendar, History, User, LogOut, Sparkles, Shield, Clock } from 'lucide-react';
+import { Droplets, Calendar, History, User, LogOut, Sparkles, Shield, Clock, MapPin } from 'lucide-react';
 import { AuthContext } from '../App';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
