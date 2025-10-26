@@ -305,6 +305,27 @@ async def delete_address(address_id: str, user_id: str = Depends(get_current_use
         raise HTTPException(status_code=404, detail="Address not found")
     return {"message": "Address deleted successfully"}
 
+@api_router.put("/addresses/{address_id}", response_model=Address)
+async def update_address(address_id: str, address_data: AddressCreate, user_id: str = Depends(get_current_user)):
+    # Verify address belongs to user
+    existing = await db.addresses.find_one({"id": address_id, "user_id": user_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Address not found")
+    
+    # Update address
+    update_dict = address_data.model_dump()
+    await db.addresses.update_one(
+        {"id": address_id, "user_id": user_id},
+        {"$set": update_dict}
+    )
+    
+    # Return updated address
+    updated_address = await db.addresses.find_one({"id": address_id}, {"_id": 0})
+    if isinstance(updated_address.get('created_at'), str):
+        updated_address['created_at'] = datetime.fromisoformat(updated_address['created_at'])
+    
+    return updated_address
+
 # Booking Routes
 @api_router.post("/bookings", response_model=Booking)
 async def create_booking(booking_data: BookingCreate, user_id: str = Depends(get_current_user)):
