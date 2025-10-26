@@ -84,7 +84,7 @@ const AdminDashboard = () => {
           </div>
           <div className="flex items-center space-x-4">
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium text-gray-900" data-testid="admin-user-name">{user?.name}</p>
+              <p className="text-sm font-medium text-gray-900" data-testid="admin-user-name">{contextUser?.name}</p>
               <p className="text-xs text-gray-500">Administrator</p>
             </div>
             <Button 
