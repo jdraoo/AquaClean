@@ -9,6 +9,9 @@ import BookService from './pages/BookService';
 import BookingConfirmation from './pages/BookingConfirmation';
 import BookingsHistory from './pages/BookingsHistory';
 import Auth from './pages/Auth';
+import FieldAuth from './pages/FieldAuth';
+import FieldDashboard from './pages/FieldDashboard';
+import JobExecution from './pages/JobExecution';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
