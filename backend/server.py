@@ -420,6 +420,310 @@ async def verify_payment(data: VerifyPayment, user_id: str = Depends(get_current
         )
         raise HTTPException(status_code=400, detail="Payment verification failed")
 
+# Field Team Models
+class FieldTeamRegister(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+    phone: str
+    employee_id: str
+
+class FieldTeamLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class FieldTeam(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: str
+    name: str
+    phone: str
+    employee_id: str
+    active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ChecklistUpdate(BaseModel):
+    step_name: str
+    status: str  # completed/pending/na/escalate
+    notes: Optional[str] = None
+    photo_url: Optional[str] = None
+    timestamp: Optional[str] = None
+
+class IncidentReport(BaseModel):
+    description: str
+    severity: str  # low/medium/high/critical
+    photo_urls: Optional[List[str]] = None
+    unable_to_proceed: bool = False
+
+class JobCompletion(BaseModel):
+    before_photo_urls: List[str]
+    after_photo_urls: List[str]
+    customer_signature: str
+    notes: Optional[str] = None
+
+# Field Team Routes
+@api_router.post("/field/register")
+async def register_field_team(team_data: FieldTeamRegister):
+    # Check if team member exists
+    existing = await db.field_teams.find_one({"email": team_data.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create field team member
+    team_member = FieldTeam(
+        email=team_data.email,
+        name=team_data.name,
+        phone=team_data.phone,
+        employee_id=team_data.employee_id
+    )
+    
+    team_dict = team_member.model_dump()
+    team_dict['password'] = hash_password(team_data.password)
+    team_dict['created_at'] = team_dict['created_at'].isoformat()
+    
+    await db.field_teams.insert_one(team_dict)
+    
+    return {"message": "Field team member registered successfully"}
+
+@api_router.post("/field/login")
+async def field_login(credentials: FieldTeamLogin):
+    team_member = await db.field_teams.find_one({"email": credentials.email})
+    if not team_member or not verify_password(credentials.password, team_member['password']):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    if not team_member.get('active', True):
+        raise HTTPException(status_code=403, detail="Account is inactive")
+    
+    token = create_jwt_token(team_member['id'])
+    
+    return {
+        "token": token,
+        "user": {
+            "id": team_member['id'],
+            "email": team_member['email'],
+            "name": team_member['name'],
+            "phone": team_member['phone'],
+            "employee_id": team_member['employee_id'],
+            "role": "field_team"
+        }
+    }
+
+async def get_current_field_team(authorization: str = Header(None)) -> str:
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    token = authorization.split(" ")[1]
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        team_id = payload.get("user_id")
+        if not team_id:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return team_id
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+@api_router.get("/field/me")
+async def get_field_me(team_id: str = Depends(get_current_field_team)):
+    team_member = await db.field_teams.find_one({"id": team_id}, {"_id": 0, "password": 0})
+    if not team_member:
+        raise HTTPException(status_code=404, detail="Team member not found")
+    return team_member
+
+@api_router.get("/field/jobs")
+async def get_field_jobs(team_id: str = Depends(get_current_field_team)):
+    # Get jobs assigned to this technician
+    jobs = await db.bookings.find({
+        "assigned_technician_id": team_id,
+        "status": {"$in": ["confirmed", "in-progress"]}
+    }, {"_id": 0}).sort("service_date", 1).to_list(100)
+    
+    # Convert datetime strings
+    for job in jobs:
+        if isinstance(job.get('created_at'), str):
+            job['created_at'] = datetime.fromisoformat(job['created_at'])
+    
+    return jobs
+
+@api_router.get("/field/jobs/{job_id}")
+async def get_field_job(job_id: str, team_id: str = Depends(get_current_field_team)):
+    job = await db.bookings.find_one({
+        "id": job_id,
+        "assigned_technician_id": team_id
+    }, {"_id": 0})
+    
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Get address details
+    address = await db.addresses.find_one({"id": job['address_id']}, {"_id": 0})
+    
+    # Get customer details
+    customer = await db.users.find_one({"id": job['user_id']}, {"_id": 0, "password": 0})
+    
+    if isinstance(job.get('created_at'), str):
+        job['created_at'] = datetime.fromisoformat(job['created_at'])
+    
+    return {
+        "job": job,
+        "address": address,
+        "customer": customer
+    }
+
+@api_router.post("/field/jobs/{job_id}/start")
+async def start_job(job_id: str, team_id: str = Depends(get_current_field_team)):
+    job = await db.bookings.find_one({"id": job_id, "assigned_technician_id": team_id})
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Initialize checklist
+    checklist = {
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "steps": {
+            "arrival": {"status": "pending", "timestamp": None, "photos": [], "notes": ""},
+            "customer_verification": {"status": "pending", "timestamp": None, "photos": [], "notes": ""},
+            "pre_inspection": {"status": "pending", "timestamp": None, "photos": [], "notes": ""},
+            "drain": {"status": "pending", "timestamp": None, "photos": [], "notes": ""},
+            "scrub": {"status": "pending", "timestamp": None, "photos": [], "notes": ""},
+            "high_pressure_clean": {"status": "pending", "timestamp": None, "photos": [], "notes": ""},
+            "disinfection": {"status": "pending", "timestamp": None, "photos": [], "notes": ""},
+            "final_rinse": {"status": "pending", "timestamp": None, "photos": [], "notes": ""}
+        },
+        "chemicals_used": [],
+        "water_usage": 0
+    }
+    
+    await db.bookings.update_one(
+        {"id": job_id},
+        {"$set": {
+            "status": "in-progress",
+            "checklist": checklist,
+            "started_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"message": "Job started successfully", "checklist": checklist}
+
+@api_router.put("/field/jobs/{job_id}/checklist")
+async def update_checklist(
+    job_id: str,
+    update: ChecklistUpdate,
+    team_id: str = Depends(get_current_field_team)
+):
+    job = await db.bookings.find_one({"id": job_id, "assigned_technician_id": team_id})
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Update checklist step
+    update_data = {
+        f"checklist.steps.{update.step_name}.status": update.status,
+        f"checklist.steps.{update.step_name}.timestamp": update.timestamp or datetime.now(timezone.utc).isoformat()
+    }
+    
+    if update.notes:
+        update_data[f"checklist.steps.{update.step_name}.notes"] = update.notes
+    
+    if update.photo_url:
+        # Add photo to array
+        await db.bookings.update_one(
+            {"id": job_id},
+            {"$push": {f"checklist.steps.{update.step_name}.photos": update.photo_url}}
+        )
+    
+    await db.bookings.update_one(
+        {"id": job_id},
+        {"$set": update_data}
+    )
+    
+    return {"message": "Checklist updated successfully"}
+
+@api_router.post("/field/jobs/{job_id}/incident")
+async def report_incident(
+    job_id: str,
+    incident: IncidentReport,
+    team_id: str = Depends(get_current_field_team)
+):
+    job = await db.bookings.find_one({"id": job_id, "assigned_technician_id": team_id})
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    incident_data = {
+        "id": str(uuid.uuid4()),
+        "description": incident.description,
+        "severity": incident.severity,
+        "photo_urls": incident.photo_urls or [],
+        "unable_to_proceed": incident.unable_to_proceed,
+        "reported_at": datetime.now(timezone.utc).isoformat(),
+        "reported_by": team_id
+    }
+    
+    await db.bookings.update_one(
+        {"id": job_id},
+        {"$push": {"incident_reports": incident_data}}
+    )
+    
+    # If unable to proceed, mark job status
+    if incident.unable_to_proceed:
+        await db.bookings.update_one(
+            {"id": job_id},
+            {"$set": {"status": "escalated"}}
+        )
+    
+    return {"message": "Incident reported successfully", "incident_id": incident_data["id"]}
+
+@api_router.post("/field/jobs/{job_id}/complete")
+async def complete_job(
+    job_id: str,
+    completion: JobCompletion,
+    team_id: str = Depends(get_current_field_team)
+):
+    job = await db.bookings.find_one({"id": job_id, "assigned_technician_id": team_id})
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    await db.bookings.update_one(
+        {"id": job_id},
+        {"$set": {
+            "status": "completed",
+            "completed_at": datetime.now(timezone.utc).isoformat(),
+            "before_photos": completion.before_photo_urls,
+            "after_photos": completion.after_photo_urls,
+            "customer_signature": completion.customer_signature,
+            "completion_notes": completion.notes or ""
+        }}
+    )
+    
+    return {"message": "Job completed successfully"}
+
+@api_router.get("/field/stats")
+async def get_field_stats(team_id: str = Depends(get_current_field_team)):
+    # Get today's date
+    today = datetime.now(timezone.utc).date().isoformat()
+    
+    # Count jobs
+    total_jobs = await db.bookings.count_documents({"assigned_technician_id": team_id})
+    today_jobs = await db.bookings.count_documents({
+        "assigned_technician_id": team_id,
+        "service_date": today
+    })
+    completed_today = await db.bookings.count_documents({
+        "assigned_technician_id": team_id,
+        "service_date": today,
+        "status": "completed"
+    })
+    in_progress = await db.bookings.count_documents({
+        "assigned_technician_id": team_id,
+        "status": "in-progress"
+    })
+    
+    return {
+        "total_jobs": total_jobs,
+        "today_jobs": today_jobs,
+        "completed_today": completed_today,
+        "in_progress": in_progress
+    }
+
 # Include router
 app.include_router(api_router)
 
