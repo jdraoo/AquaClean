@@ -16,7 +16,7 @@ const LandingPage = () => {
             <span className="text-2xl font-bold text-teal-700">AquaClean</span>
           </div>
           <Button 
-            onClick={() => navigate('/auth')} 
+            onClick={() => navigate('/login')} 
             className="bg-teal-600 hover:bg-teal-700 text-white px-6"
             data-testid="header-login-btn"
           >
