@@ -132,25 +132,6 @@ const LandingPage = () => {
             <span className="text-xl font-bold text-white">AquaClean</span>
           </div>
           <p className="text-sm mb-4">Professional Tank & Sump Hygiene Services</p>
-          <div className="flex justify-center space-x-4 mb-4">
-            <Button
-              variant="link"
-              className="text-teal-400 hover:text-teal-300"
-              onClick={() => navigate('/field/auth')}
-              data-testid="field-team-login-link"
-            >
-              Field Team Login
-            </Button>
-            <span className="text-gray-500">|</span>
-            <Button
-              variant="link"
-              className="text-teal-400 hover:text-teal-300"
-              onClick={() => navigate('/admin/auth')}
-              data-testid="admin-login-link"
-            >
-              Admin Portal
-            </Button>
-          </div>
           <p className="text-xs text-gray-500">© 2025 AquaClean. All rights reserved.</p>
         </div>
       </footer>
