@@ -82,8 +82,11 @@ const AdminBookings = () => {
     }
 
     try {
+      const token = localStorage.getItem('token');
       await axios.put(`${API}/admin/bookings/${selectedBooking.id}/assign`, {
         technician_id: selectedTechnician
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Technician assigned successfully');
       setShowAssignDialog(false);
@@ -95,8 +98,11 @@ const AdminBookings = () => {
 
   const handleStatusChange = async (bookingId, newStatus) => {
     try {
+      const token = localStorage.getItem('token');
       await axios.put(`${API}/admin/bookings/${bookingId}/status`, {
         status: newStatus
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Status updated successfully');
       fetchData();
