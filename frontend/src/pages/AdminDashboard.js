@@ -1,50 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Shield, LogOut, Users, Calendar, TrendingUp, DollarSign, Briefcase, AlertCircle } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
+import { AuthContext } from '../App';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Axios interceptor for admin
-axios.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('admin_token');
-    if (token && config.url?.includes('/admin/')) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user: contextUser, logout } = useContext(AuthContext);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const userData = localStorage.getItem('admin_user');
-    if (!userData) {
-      navigate('/admin/auth');
+    if (!contextUser || contextUser.role !== 'admin') {
+      navigate('/login');
       return;
     }
-    setUser(JSON.parse(userData));
     fetchDashboardStats();
-  }, []);
+  }, [contextUser, navigate]);
 
   const fetchDashboardStats = async () => {
     try {
-      const response = await axios.get(`${API}/admin/dashboard-stats`);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API}/admin/dashboard-stats`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setStats(response.data);
     } catch (error) {
       console.error('Failed to fetch stats:', error);
       if (error.response?.status === 401) {
-        handleLogout();
+        logout();
+        navigate('/login');
       }
     } finally {
       setLoading(false);
@@ -52,9 +43,8 @@ const AdminDashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
-    navigate('/admin/auth');
+    logout();
+    navigate('/');
   };
 
   const getStatusColor = (status) => {
