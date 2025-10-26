@@ -58,15 +58,31 @@ const BookService = () => {
       return;
     }
 
+    if (!newAddress.lat || !newAddress.lng) {
+      toast.error('Please select location on map');
+      return;
+    }
+
     try {
       const response = await axios.post(`${API}/addresses`, newAddress);
       setAddresses([...addresses, response.data]);
       setSelectedAddress(response.data.id);
-      setNewAddress({ name: '', address_line: '', landmark: '' });
+      setNewAddress({ name: '', address_line: '', landmark: '', lat: null, lng: null });
+      setShowMapPicker(false);
       toast.success('Address added successfully');
     } catch (error) {
       toast.error('Failed to add address');
     }
+  };
+
+  const handleLocationSelect = (location) => {
+    setNewAddress({
+      ...newAddress,
+      address_line: location.address,
+      lat: location.lat,
+      lng: location.lng
+    });
+    toast.success('Location selected');
   };
 
   const calculateTotal = () => {
