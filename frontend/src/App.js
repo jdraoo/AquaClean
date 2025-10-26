@@ -104,34 +104,43 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={user ? <Navigate to="/dashboard" /> : <LandingPage />} />
-          <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <Auth />} />
+          <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <UnifiedAuth />} />
+          
+          {/* Dashboard - Unified for all roles */}
           <Route
             path="/dashboard"
-            element={user ? <Dashboard /> : <Navigate to="/auth" />}
+            element={user ? <UnifiedDashboard /> : <Navigate to="/login" />}
           />
+          
+          {/* Customer Routes */}
           <Route
             path="/book-service"
-            element={user ? <BookService /> : <Navigate to="/auth" />}
+            element={user && user.role === 'customer' ? <BookService /> : <Navigate to="/login" />}
           />
           <Route
             path="/booking-confirmation/:bookingId"
-            element={user ? <BookingConfirmation /> : <Navigate to="/auth" />}
+            element={user && user.role === 'customer' ? <BookingConfirmation /> : <Navigate to="/login" />}
           />
           <Route
             path="/bookings"
-            element={user ? <BookingsHistory /> : <Navigate to="/auth" />}
+            element={user && user.role === 'customer' ? <BookingsHistory /> : <Navigate to="/login" />}
           />
           
           {/* Field Team Routes */}
-          <Route path="/field/auth" element={<FieldAuth />} />
-          <Route path="/field/dashboard" element={<FieldDashboard />} />
-          <Route path="/field/job/:jobId" element={<JobExecution />} />
+          <Route
+            path="/job/:jobId"
+            element={user && user.role === 'field_team' ? <JobExecution /> : <Navigate to="/login" />}
+          />
           
           {/* Admin Routes */}
-          <Route path="/admin/auth" element={<AdminAuth />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/bookings" element={<AdminBookings />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route
+            path="/admin/bookings"
+            element={user && user.role === 'admin' ? <AdminBookings /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/admin/users"
+            element={user && user.role === 'admin' ? <AdminUsers /> : <Navigate to="/login" />}
+          />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" richColors />
