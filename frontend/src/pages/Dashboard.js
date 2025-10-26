@@ -84,7 +84,7 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 gap-6 mb-12">
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
           <Card 
             className="p-8 bg-gradient-to-br from-teal-500 to-cyan-600 text-white cursor-pointer hover:shadow-xl border-0"
             onClick={() => navigate('/book-service')}
@@ -103,6 +103,16 @@ const Dashboard = () => {
             <History className="h-12 w-12 text-teal-600 mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Booking History</h2>
             <p className="text-gray-600">View all your past bookings</p>
+          </Card>
+
+          <Card 
+            className="p-8 bg-white hover:shadow-xl cursor-pointer border border-teal-100"
+            onClick={() => navigate('/addresses')}
+            data-testid="manage-addresses-card"
+          >
+            <MapPin className="h-12 w-12 text-teal-600 mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">My Addresses</h2>
+            <p className="text-gray-600">Manage service locations</p>
           </Card>
         </div>
 
