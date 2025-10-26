@@ -103,6 +103,12 @@ function App() {
           <Route path="/field/auth" element={<FieldAuth />} />
           <Route path="/field/dashboard" element={<FieldDashboard />} />
           <Route path="/field/job/:jobId" element={<JobExecution />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin/auth" element={<AdminAuth />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/bookings" element={<AdminBookings />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" richColors />
