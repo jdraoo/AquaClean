@@ -278,27 +278,82 @@ const BookService = () => {
                       data-testid="address-name-input"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="address-line">Address</Label>
-                    <Input
-                      id="address-line"
-                      placeholder="House no, Street, Area"
-                      value={newAddress.address_line}
-                      onChange={(e) => setNewAddress({ ...newAddress, address_line: e.target.value })}
-                      data-testid="address-line-input"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="landmark">Landmark (Optional)</Label>
-                    <Input
-                      id="landmark"
-                      placeholder="Near..."
-                      value={newAddress.landmark}
-                      onChange={(e) => setNewAddress({ ...newAddress, landmark: e.target.value })}
-                      data-testid="landmark-input"
-                    />
-                  </div>
-                  <Button onClick={handleAddAddress} variant="outline" className="w-full" data-testid="add-address-btn">
+
+                  {/* Map Picker Toggle */}
+                  {!showMapPicker ? (
+                    <>
+                      <div>
+                        <Label htmlFor="address-line">Address</Label>
+                        <Input
+                          id="address-line"
+                          placeholder="House no, Street, Area"
+                          value={newAddress.address_line}
+                          onChange={(e) => setNewAddress({ ...newAddress, address_line: e.target.value })}
+                          data-testid="address-line-input"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="landmark">Landmark (Optional)</Label>
+                        <Input
+                          id="landmark"
+                          placeholder="Near..."
+                          value={newAddress.landmark}
+                          onChange={(e) => setNewAddress({ ...newAddress, landmark: e.target.value })}
+                          data-testid="landmark-input"
+                        />
+                      </div>
+                      <Button 
+                        onClick={() => setShowMapPicker(true)} 
+                        variant="outline" 
+                        className="w-full"
+                        data-testid="select-on-map-btn"
+                      >
+                        <MapPin className="mr-2 h-4 w-4" /> Select Location on Map
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <MapPicker
+                        onLocationSelect={handleLocationSelect}
+                        initialLocation={newAddress.lat && newAddress.lng ? { lat: newAddress.lat, lng: newAddress.lng } : null}
+                      />
+                      <Button 
+                        onClick={() => setShowMapPicker(false)} 
+                        variant="outline" 
+                        className="w-full"
+                      >
+                        Enter Address Manually
+                      </Button>
+                    </>
+                  )}
+
+                  {/* Show selected coordinates */}
+                  {newAddress.lat && newAddress.lng && (
+                    <div className="p-3 bg-teal-50 rounded-lg border border-teal-200">
+                      <p className="text-sm font-medium text-teal-900 mb-1">Location Selected</p>
+                      <p className="text-xs text-teal-700">{newAddress.address_line}</p>
+                      {newAddress.landmark && (
+                        <div className="mt-2">
+                          <Label htmlFor="landmark-after-map" className="text-xs">Add Landmark (Optional)</Label>
+                          <Input
+                            id="landmark-after-map"
+                            placeholder="Near..."
+                            value={newAddress.landmark}
+                            onChange={(e) => setNewAddress({ ...newAddress, landmark: e.target.value })}
+                            className="mt-1"
+                            data-testid="landmark-after-map-input"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <Button 
+                    onClick={handleAddAddress} 
+                    className="w-full bg-teal-600 hover:bg-teal-700" 
+                    data-testid="add-address-btn"
+                    disabled={!newAddress.name || !newAddress.lat || !newAddress.lng}
+                  >
                     <MapPin className="mr-2 h-4 w-4" /> Add Address
                   </Button>
                 </div>
