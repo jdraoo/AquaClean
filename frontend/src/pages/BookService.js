@@ -27,7 +27,8 @@ const BookService = () => {
 
   // Form state
   const [selectedAddress, setSelectedAddress] = useState('');
-  const [newAddress, setNewAddress] = useState({ name: '', address_line: '', landmark: '' });
+  const [newAddress, setNewAddress] = useState({ name: '', address_line: '', landmark: '', lat: null, lng: null });
+  const [showMapPicker, setShowMapPicker] = useState(false);
   const [tankType, setTankType] = useState('overhead');
   const [tankCapacity, setTankCapacity] = useState('1000');
   const [serviceDate, setServiceDate] = useState(null);
