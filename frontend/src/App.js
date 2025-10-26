@@ -126,6 +126,10 @@ function App() {
             path="/bookings"
             element={user && user.role === 'customer' ? <BookingsHistory /> : <Navigate to="/login" />}
           />
+          <Route
+            path="/addresses"
+            element={user && user.role === 'customer' ? <AddressManagement /> : <Navigate to="/login" />}
+          />
           
           {/* Field Team Routes */}
           <Route
