@@ -26,9 +26,14 @@ const AdminUsers = () => {
 
   const fetchData = async () => {
     try {
+      const token = localStorage.getItem('token');
       const [customersRes, techRes] = await Promise.all([
-        axios.get(`${API}/admin/customers`),
-        axios.get(`${API}/admin/field-teams`)
+        axios.get(`${API}/admin/customers`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API}/admin/field-teams`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
       ]);
       setCustomers(customersRes.data);
       setTechnicians(techRes.data);
