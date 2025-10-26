@@ -124,7 +124,7 @@ const JobExecution = () => {
         notes: completionNotes
       });
       toast.success('Job completed successfully!');
-      navigate('/field/dashboard');
+      navigate('/dashboard');
     } catch (error) {
       toast.error('Failed to complete job');
     }
