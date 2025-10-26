@@ -217,7 +217,7 @@ const FieldDashboard = () => {
                         className="bg-blue-600 hover:bg-blue-700"
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/field/job/${job.id}`);
+                          navigate(`/job/${job.id}`);
                         }}
                         data-testid="view-job-btn"
                       >
