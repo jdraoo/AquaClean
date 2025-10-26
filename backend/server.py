@@ -724,6 +724,298 @@ async def get_field_stats(team_id: str = Depends(get_current_field_team)):
         "in_progress": in_progress
     }
 
+# Admin Models
+class AdminRegister(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+    role: str = "admin"
+
+class AdminLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class Admin(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: str
+    name: str
+    role: str = "admin"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AssignTechnician(BaseModel):
+    technician_id: str
+
+class UpdateBookingStatus(BaseModel):
+    status: str
+
+# Admin Routes
+@api_router.post("/admin/register")
+async def register_admin(admin_data: AdminRegister):
+    # Check if admin exists
+    existing = await db.admins.find_one({"email": admin_data.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    admin = Admin(
+        email=admin_data.email,
+        name=admin_data.name,
+        role=admin_data.role
+    )
+    
+    admin_dict = admin.model_dump()
+    admin_dict['password'] = hash_password(admin_data.password)
+    admin_dict['created_at'] = admin_dict['created_at'].isoformat()
+    
+    await db.admins.insert_one(admin_dict)
+    
+    return {"message": "Admin registered successfully"}
+
+@api_router.post("/admin/login")
+async def admin_login(credentials: AdminLogin):
+    admin = await db.admins.find_one({"email": credentials.email})
+    if not admin or not verify_password(credentials.password, admin['password']):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    token = create_jwt_token(admin['id'])
+    
+    return {
+        "token": token,
+        "user": {
+            "id": admin['id'],
+            "email": admin['email'],
+            "name": admin['name'],
+            "role": admin.get('role', 'admin')
+        }
+    }
+
+async def get_current_admin(authorization: str = Header(None)) -> str:
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    token = authorization.split(" ")[1]
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        admin_id = payload.get("user_id")
+        if not admin_id:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+        # Verify admin exists
+        admin = await db.admins.find_one({"id": admin_id})
+        if not admin:
+            raise HTTPException(status_code=403, detail="Admin access required")
+        
+        return admin_id
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+@api_router.get("/admin/me")
+async def get_admin_me(admin_id: str = Depends(get_current_admin)):
+    admin = await db.admins.find_one({"id": admin_id}, {"_id": 0, "password": 0})
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found")
+    return admin
+
+@api_router.get("/admin/dashboard-stats")
+async def get_admin_dashboard_stats(admin_id: str = Depends(get_current_admin)):
+    # Get overall statistics
+    total_customers = await db.users.count_documents({})
+    total_technicians = await db.field_teams.count_documents({})
+    total_bookings = await db.bookings.count_documents({})
+    
+    # Today's stats
+    today = datetime.now(timezone.utc).date().isoformat()
+    today_bookings = await db.bookings.count_documents({"service_date": today})
+    
+    # Status breakdown
+    pending_bookings = await db.bookings.count_documents({"status": "pending"})
+    confirmed_bookings = await db.bookings.count_documents({"status": "confirmed"})
+    in_progress_bookings = await db.bookings.count_documents({"status": "in-progress"})
+    completed_bookings = await db.bookings.count_documents({"status": "completed"})
+    
+    # Revenue calculation (completed bookings)
+    completed_jobs = await db.bookings.find({"payment_status": "completed"}, {"_id": 0, "amount": 1}).to_list(10000)
+    total_revenue = sum(job.get("amount", 0) for job in completed_jobs)
+    
+    # Recent bookings
+    recent_bookings = await db.bookings.find({}, {"_id": 0}).sort("created_at", -1).limit(5).to_list(5)
+    for booking in recent_bookings:
+        if isinstance(booking.get('created_at'), str):
+            booking['created_at'] = datetime.fromisoformat(booking['created_at'])
+    
+    return {
+        "total_customers": total_customers,
+        "total_technicians": total_technicians,
+        "total_bookings": total_bookings,
+        "today_bookings": today_bookings,
+        "pending_bookings": pending_bookings,
+        "confirmed_bookings": confirmed_bookings,
+        "in_progress_bookings": in_progress_bookings,
+        "completed_bookings": completed_bookings,
+        "total_revenue": total_revenue,
+        "recent_bookings": recent_bookings
+    }
+
+@api_router.get("/admin/bookings")
+async def get_all_bookings(
+    status: Optional[str] = None,
+    admin_id: str = Depends(get_current_admin)
+):
+    # Build filter
+    filter_query = {}
+    if status:
+        filter_query["status"] = status
+    
+    bookings = await db.bookings.find(filter_query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    
+    # Enrich with customer and technician info
+    for booking in bookings:
+        if isinstance(booking.get('created_at'), str):
+            booking['created_at'] = datetime.fromisoformat(booking['created_at'])
+        
+        # Get customer info
+        customer = await db.users.find_one({"id": booking['user_id']}, {"_id": 0, "password": 0})
+        booking['customer'] = customer
+        
+        # Get technician info if assigned
+        if booking.get('assigned_technician_id'):
+            technician = await db.field_teams.find_one(
+                {"id": booking['assigned_technician_id']}, 
+                {"_id": 0, "password": 0}
+            )
+            booking['technician'] = technician
+        
+        # Get address info
+        address = await db.addresses.find_one({"id": booking['address_id']}, {"_id": 0})
+        booking['address'] = address
+    
+    return bookings
+
+@api_router.put("/admin/bookings/{booking_id}/assign")
+async def assign_technician_to_booking(
+    booking_id: str,
+    data: AssignTechnician,
+    admin_id: str = Depends(get_current_admin)
+):
+    # Verify technician exists
+    technician = await db.field_teams.find_one({"id": data.technician_id})
+    if not technician:
+        raise HTTPException(status_code=404, detail="Technician not found")
+    
+    # Verify booking exists
+    booking = await db.bookings.find_one({"id": booking_id})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    # Assign technician
+    await db.bookings.update_one(
+        {"id": booking_id},
+        {"$set": {"assigned_technician_id": data.technician_id}}
+    )
+    
+    return {"message": "Technician assigned successfully"}
+
+@api_router.put("/admin/bookings/{booking_id}/status")
+async def update_booking_status(
+    booking_id: str,
+    data: UpdateBookingStatus,
+    admin_id: str = Depends(get_current_admin)
+):
+    booking = await db.bookings.find_one({"id": booking_id})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    await db.bookings.update_one(
+        {"id": booking_id},
+        {"$set": {"status": data.status}}
+    )
+    
+    return {"message": "Booking status updated successfully"}
+
+@api_router.get("/admin/customers")
+async def get_all_customers(admin_id: str = Depends(get_current_admin)):
+    customers = await db.users.find({}, {"_id": 0, "password": 0}).to_list(1000)
+    
+    for customer in customers:
+        if isinstance(customer.get('created_at'), str):
+            customer['created_at'] = datetime.fromisoformat(customer['created_at'])
+        
+        # Get booking count for each customer
+        booking_count = await db.bookings.count_documents({"user_id": customer['id']})
+        customer['total_bookings'] = booking_count
+    
+    return customers
+
+@api_router.get("/admin/field-teams")
+async def get_all_field_teams(admin_id: str = Depends(get_current_admin)):
+    teams = await db.field_teams.find({}, {"_id": 0, "password": 0}).to_list(1000)
+    
+    for team in teams:
+        if isinstance(team.get('created_at'), str):
+            team['created_at'] = datetime.fromisoformat(team['created_at'])
+        
+        # Get job counts
+        total_jobs = await db.bookings.count_documents({"assigned_technician_id": team['id']})
+        completed_jobs = await db.bookings.count_documents({
+            "assigned_technician_id": team['id'],
+            "status": "completed"
+        })
+        team['total_jobs'] = total_jobs
+        team['completed_jobs'] = completed_jobs
+    
+    return teams
+
+@api_router.get("/admin/incidents")
+async def get_all_incidents(admin_id: str = Depends(get_current_admin)):
+    # Get all bookings with incidents
+    bookings_with_incidents = await db.bookings.find(
+        {"incident_reports": {"$exists": True, "$ne": []}},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    incidents = []
+    for booking in bookings_with_incidents:
+        for incident in booking.get('incident_reports', []):
+            incidents.append({
+                "booking_id": booking['id'],
+                "service_date": booking['service_date'],
+                "tank_type": booking['tank_type'],
+                "incident": incident
+            })
+    
+    return incidents
+
+@api_router.get("/admin/analytics")
+async def get_analytics(admin_id: str = Depends(get_current_admin)):
+    # Revenue by month (last 6 months)
+    from datetime import timedelta
+    six_months_ago = (datetime.now(timezone.utc) - timedelta(days=180)).date().isoformat()
+    
+    recent_bookings = await db.bookings.find(
+        {"created_at": {"$gte": six_months_ago}},
+        {"_id": 0, "amount": 1, "payment_status": 1, "service_date": 1, "package_type": 1}
+    ).to_list(10000)
+    
+    # Calculate metrics
+    revenue_by_package = {}
+    for booking in recent_bookings:
+        if booking.get('payment_status') == 'completed':
+            pkg = booking.get('package_type', 'unknown')
+            revenue_by_package[pkg] = revenue_by_package.get(pkg, 0) + booking.get('amount', 0)
+    
+    # Average booking value
+    completed_amounts = [b.get('amount', 0) for b in recent_bookings if b.get('payment_status') == 'completed']
+    avg_booking_value = sum(completed_amounts) / len(completed_amounts) if completed_amounts else 0
+    
+    return {
+        "revenue_by_package": revenue_by_package,
+        "average_booking_value": avg_booking_value,
+        "total_bookings_6months": len(recent_bookings),
+        "completed_bookings_6months": len([b for b in recent_bookings if b.get('payment_status') == 'completed'])
+    }
+
 # Include router
 app.include_router(api_router)
 
