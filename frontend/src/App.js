@@ -48,10 +48,32 @@ function App() {
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get(`${API}/auth/me`);
-      setUser(response.data);
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user && user.role) {
+        // Fetch updated user data based on role
+        let response;
+        if (user.role === 'field_team') {
+          response = await axios.get(`${API}/field/me`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          });
+        } else if (user.role === 'admin') {
+          response = await axios.get(`${API}/admin/me`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          });
+        } else {
+          response = await axios.get(`${API}/auth/me`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          });
+        }
+        setUser({ ...response.data, role: user.role });
+      } else {
+        // Fallback to old method
+        const response = await axios.get(`${API}/auth/me`);
+        setUser({ ...response.data, role: 'customer' });
+      }
     } catch (error) {
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
     } finally {
       setLoading(false);
     }
