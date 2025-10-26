@@ -169,7 +169,7 @@ const FieldDashboard = () => {
                   style={{
                     borderLeftColor: job.status === 'in-progress' ? '#3b82f6' : '#10b981'
                   }}
-                  onClick={() => navigate(`/field/job/${job.id}`)}
+                  onClick={() => navigate(`/job/${job.id}`)}
                   data-testid="job-card"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
