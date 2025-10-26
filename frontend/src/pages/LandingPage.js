@@ -115,7 +115,7 @@ const LandingPage = () => {
           </p>
           <Button
             size="lg"
-            onClick={() => navigate('/auth')}
+            onClick={() => navigate('/login')}
             className="bg-white text-teal-600 hover:bg-teal-50 px-8 py-6 text-lg rounded-full shadow-lg"
             data-testid="cta-book-now-btn"
           >
