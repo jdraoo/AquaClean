@@ -116,6 +116,10 @@ class Booking(BaseModel):
     amount: int  # in paise
     razorpay_order_id: Optional[str] = None
     payment_status: str = "pending"  # pending/completed/failed
+    assigned_technician_id: Optional[str] = None
+    checklist: Optional[dict] = None
+    incident_reports: Optional[List[dict]] = None
+    customer_signature: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class PaymentOrder(BaseModel):
