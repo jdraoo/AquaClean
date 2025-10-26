@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import BookService from './pages/BookService';
 import BookingConfirmation from './pages/BookingConfirmation';
 import BookingsHistory from './pages/BookingsHistory';
+import AddressManagement from './pages/AddressManagement';
 import FieldDashboard from './pages/FieldDashboard';
 import JobExecution from './pages/JobExecution';
 import AdminDashboard from './pages/AdminDashboard';
