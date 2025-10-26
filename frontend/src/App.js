@@ -94,6 +94,11 @@ function App() {
             path="/bookings"
             element={user ? <BookingsHistory /> : <Navigate to="/auth" />}
           />
+          
+          {/* Field Team Routes */}
+          <Route path="/field/auth" element={<FieldAuth />} />
+          <Route path="/field/dashboard" element={<FieldDashboard />} />
+          <Route path="/field/job/:jobId" element={<JobExecution />} />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" richColors />
