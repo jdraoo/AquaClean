@@ -1,55 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Wrench, LogOut, ClipboardList, Calendar, MapPin, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
+import { AuthContext } from '../App';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Axios interceptor for field team
-axios.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('field_token');
-    if (token && config.url?.includes('/field/')) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
 const FieldDashboard = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user: contextUser, logout } = useContext(AuthContext);
   const [jobs, setJobs] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const userData = localStorage.getItem('field_user');
-    if (!userData) {
-      navigate('/field/auth');
+    if (!contextUser || contextUser.role !== 'field_team') {
+      navigate('/login');
       return;
     }
-    setUser(JSON.parse(userData));
     fetchData();
-  }, []);
+  }, [contextUser, navigate]);
 
   const fetchData = async () => {
     try {
+      const token = localStorage.getItem('token');
       const [jobsRes, statsRes] = await Promise.all([
-        axios.get(`${API}/field/jobs`),
-        axios.get(`${API}/field/stats`)
+        axios.get(`${API}/field/jobs`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API}/field/stats`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
       ]);
       setJobs(jobsRes.data);
       setStats(statsRes.data);
     } catch (error) {
       console.error('Failed to fetch data:', error);
       if (error.response?.status === 401) {
-        handleLogout();
+        logout();
+        navigate('/login');
       }
     } finally {
       setLoading(false);
@@ -57,9 +50,8 @@ const FieldDashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('field_token');
-    localStorage.removeItem('field_user');
-    navigate('/field/auth');
+    logout();
+    navigate('/');
   };
 
   const getStatusColor = (status) => {
