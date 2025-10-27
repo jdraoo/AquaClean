@@ -84,14 +84,68 @@ const MapPicker = ({ onLocationSelect, initialLocation }) => {
   if (!apiKey) {
     return (
       <Card className="p-6 bg-yellow-50 border-yellow-200">
-        <p className="text-yellow-800">Google Maps API key not configured. Please add REACT_APP_GOOGLE_MAPS_API_KEY to your .env file.</p>
+        <div className="flex items-start space-x-3">
+          <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+          <div>
+            <p className="font-semibold text-yellow-900 mb-1">Google Maps API key not configured</p>
+            <p className="text-sm text-yellow-800">Please add REACT_APP_GOOGLE_MAPS_API_KEY to your .env file.</p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  const handleLoadError = (error) => {
+    console.error('Google Maps Load Error:', error);
+    setMapError(error.message || 'Failed to load Google Maps');
+  };
+
+  if (mapError) {
+    return (
+      <Card className="p-6 bg-red-50 border-red-200">
+        <div className="flex items-start space-x-3">
+          <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
+          <div className="flex-1">
+            <p className="font-semibold text-red-900 mb-2">Google Maps Error</p>
+            <p className="text-sm text-red-800 mb-3">
+              Unable to load Google Maps. This usually means:
+            </p>
+            <ul className="text-sm text-red-700 space-y-1 mb-4 list-disc list-inside">
+              <li>The API key may be invalid or restricted</li>
+              <li>Required APIs not enabled (Maps JavaScript API, Places API, Geocoding API)</li>
+              <li>Billing not enabled in Google Cloud Console</li>
+              <li>Domain restrictions preventing access</li>
+            </ul>
+            <div className="bg-red-100 p-3 rounded text-xs text-red-900">
+              <p className="font-semibold mb-1">To fix this:</p>
+              <p>1. Go to <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="underline">Google Cloud Console</a></p>
+              <p>2. Enable billing for your project</p>
+              <p>3. Enable: Maps JavaScript API, Places API, Geocoding API</p>
+              <p>4. Check API key restrictions (allow your domain)</p>
+            </div>
+            <Button
+              onClick={() => {
+                setMapError(null);
+                window.location.reload();
+              }}
+              className="mt-4 bg-red-600 hover:bg-red-700"
+              size="sm"
+            >
+              Retry Loading Maps
+            </Button>
+          </div>
+        </div>
       </Card>
     );
   }
 
   return (
     <div className="space-y-4" data-testid="map-picker">
-      <LoadScript googleMapsApiKey={apiKey} libraries={libraries}>
+      <LoadScript 
+        googleMapsApiKey={apiKey} 
+        libraries={libraries}
+        onError={handleLoadError}
+      >
         <div className="space-y-4">
           {/* Search Box */}
           <div>
