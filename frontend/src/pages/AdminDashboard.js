@@ -24,6 +24,18 @@ const AdminDashboard = () => {
     fetchDashboardStats();
   }, [contextUser, navigate]);
 
+  // Re-fetch stats when component receives focus (when navigating back)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (contextUser && contextUser.role === 'admin') {
+        fetchDashboardStats();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [contextUser]);
+
   const fetchDashboardStats = async () => {
     try {
       const token = localStorage.getItem('token');
