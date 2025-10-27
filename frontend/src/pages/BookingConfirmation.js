@@ -152,6 +152,59 @@ const BookingConfirmation = () => {
           </div>
         </Card>
 
+        {/* Before/After Photos - Show only if job completed */}
+        {booking.status === 'completed' && (booking.before_photos?.length > 0 || booking.after_photos?.length > 0) && (
+          <Card className="p-6 bg-white mb-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Service Photos</h3>
+            
+            {booking.before_photos && booking.before_photos.length > 0 && (
+              <div className="mb-6">
+                <h4 className="font-semibold text-gray-700 mb-3">Before Service</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {booking.before_photos.map((photo, index) => (
+                    <a
+                      key={index}
+                      href={photo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group"
+                    >
+                      <img
+                        src={photo}
+                        alt={`Before ${index + 1}`}
+                        className="w-full h-48 object-cover rounded-lg border-2 border-gray-200 group-hover:border-teal-500 transition-colors cursor-pointer"
+                      />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {booking.after_photos && booking.after_photos.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-gray-700 mb-3">After Service</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {booking.after_photos.map((photo, index) => (
+                    <a
+                      key={index}
+                      href={photo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group"
+                    >
+                      <img
+                        src={photo}
+                        alt={`After ${index + 1}`}
+                        className="w-full h-48 object-cover rounded-lg border-2 border-gray-200 group-hover:border-teal-500 transition-colors cursor-pointer"
+                      />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
+
         {/* Info Box */}
         <Card className="p-4 bg-blue-50 border-blue-200 mb-6">
           <p className="text-sm text-blue-900">
