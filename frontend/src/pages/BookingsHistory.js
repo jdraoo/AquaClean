@@ -126,8 +126,7 @@ const BookingsHistory = () => {
             {bookings.map((booking) => (
               <Card
                 key={booking.id}
-                className="p-6 bg-white hover:shadow-lg cursor-pointer"
-                onClick={() => navigate(`/booking-confirmation/${booking.id}`)}
+                className="p-6 bg-white hover:shadow-lg"
                 data-testid="booking-history-item"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
