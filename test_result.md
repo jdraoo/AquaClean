@@ -288,22 +288,33 @@ agent_communication:
     message: |
       Fixed Dashboard Back Navigation Issue:
       
-      ISSUE: When navigating back from booking management pages (AdminBookings, BookingsHistory, etc.), 
+      ISSUE 1: When navigating back from booking management pages (AdminBookings, BookingsHistory, etc.), 
       the dashboard page would appear blank and require a manual refresh to display content.
       
-      ROOT CAUSE: Dashboard components (Dashboard, AdminDashboard, FieldDashboard) were not re-fetching 
+      ROOT CAUSE 1: Dashboard components (Dashboard, AdminDashboard, FieldDashboard) were not re-fetching 
       data when navigating back because useEffect dependencies didn't include location changes.
       
-      SOLUTION: Added useLocation hook from react-router-dom and included location in useEffect 
+      SOLUTION 1: Added useLocation hook from react-router-dom and included location in useEffect 
       dependencies for all dashboard components. This ensures:
       1. Component detects route changes when navigating back
       2. Data is automatically re-fetched
       3. No manual refresh needed
       
+      ISSUE 2 (Found by testing agent): Admin pages (AdminBookings, AdminUsers) were navigating 
+      to '/admin/dashboard' which doesn't exist as a route. This caused blank page error.
+      
+      ROOT CAUSE 2: Admin pages using old route instead of unified dashboard route.
+      
+      SOLUTION 2: Fixed back button navigation in admin pages:
+      - AdminBookings.js: Changed navigate('/admin/dashboard') → navigate('/dashboard')
+      - AdminUsers.js: Changed navigate('/admin/dashboard') → navigate('/dashboard')
+      
       CHANGES MADE:
       - Dashboard.js: Added useLocation, updated useEffect to include location dependency
       - AdminDashboard.js: Added useLocation, updated useEffect to include location dependency
       - FieldDashboard.js: Added useLocation, updated useEffect to include location dependency
+      - AdminBookings.js: Fixed back button navigation to '/dashboard'
+      - AdminUsers.js: Fixed back button navigation to '/dashboard'
       
       Ready for testing: Navigate to bookings/booking management → click back button → verify dashboard shows content immediately.
   - agent: "testing"
