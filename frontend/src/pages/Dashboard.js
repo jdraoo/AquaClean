@@ -117,6 +117,11 @@ const Dashboard = () => {
           </Card>
         </div>
 
+        {/* Notification Settings */}
+        <div className="mb-12">
+          <NotificationSettings />
+        </div>
+
         {/* Recent Bookings */}
         <div className="mb-12">
           <div className="flex justify-between items-center mb-6">
