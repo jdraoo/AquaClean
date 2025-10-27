@@ -176,7 +176,7 @@ const AdminBookings = () => {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-purple-100 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center space-x-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/dashboard')} data-testid="back-btn">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} data-testid="back-btn">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <Shield className="h-8 w-8 text-purple-600" />
