@@ -114,6 +114,44 @@ const AdminBookings = () => {
     }
   };
 
+  const handleReschedule = async () => {
+    if (!rescheduleDate) {
+      toast.error('Please select a date');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`${API}/admin/bookings/${selectedBooking.id}/reschedule`, null, {
+        params: {
+          service_date: rescheduleDate,
+          service_time: rescheduleTime
+        },
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Booking rescheduled successfully');
+      setShowRescheduleDialog(false);
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to reschedule booking');
+    }
+  };
+
+  const handleCancelBooking = async (bookingId) => {
+    if (!confirm('Are you sure you want to cancel this booking?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API}/admin/bookings/${bookingId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Booking cancelled successfully');
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to cancel booking');
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'confirmed': return 'bg-green-100 text-green-700';
