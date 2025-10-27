@@ -955,6 +955,76 @@ async def update_booking_status(
     
     return {"message": "Booking status updated successfully"}
 
+@api_router.put("/admin/bookings/{booking_id}/reschedule")
+async def reschedule_booking(
+    booking_id: str,
+    service_date: str,
+    service_time: str,
+    admin_id: str = Depends(get_current_admin)
+):
+    booking = await db.bookings.find_one({"id": booking_id})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    await db.bookings.update_one(
+        {"id": booking_id},
+        {"$set": {
+            "service_date": service_date,
+            "service_time": service_time
+        }}
+    )
+    
+    return {"message": "Booking rescheduled successfully"}
+
+@api_router.post("/admin/bookings/create")
+async def create_booking_admin(
+    booking_data: BookingCreate,
+    user_id: str,
+    admin_id: str = Depends(get_current_admin)
+):
+    """Admin can create booking for any customer"""
+    # Verify customer exists
+    customer = await db.users.find_one({"id": user_id})
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    # Verify address belongs to customer
+    address = await db.addresses.find_one({"id": booking_data.address_id, "user_id": user_id})
+    if not address:
+        raise HTTPException(status_code=404, detail="Address not found")
+    
+    # Calculate amount
+    amount = calculate_booking_amount(booking_data)
+    
+    booking = Booking(
+        user_id=user_id,
+        amount=amount,
+        **booking_data.model_dump()
+    )
+    
+    booking_dict = booking.model_dump()
+    booking_dict['created_at'] = booking_dict['created_at'].isoformat()
+    
+    await db.bookings.insert_one(booking_dict)
+    return booking
+
+@api_router.delete("/admin/bookings/{booking_id}")
+async def cancel_booking_admin(
+    booking_id: str,
+    admin_id: str = Depends(get_current_admin)
+):
+    """Admin can cancel any booking"""
+    booking = await db.bookings.find_one({"id": booking_id})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    await db.bookings.update_one(
+        {"id": booking_id},
+        {"$set": {"status": "cancelled"}}
+    )
+    
+    return {"message": "Booking cancelled successfully"}
+
 @api_router.get("/admin/customers")
 async def get_all_customers(admin_id: str = Depends(get_current_admin)):
     customers = await db.users.find({}, {"_id": 0, "password": 0}).to_list(1000)
