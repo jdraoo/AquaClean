@@ -12,6 +12,7 @@ const API = `${BACKEND_URL}/api`;
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user: contextUser, logout } = useContext(AuthContext);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,19 +23,7 @@ const AdminDashboard = () => {
       return;
     }
     fetchDashboardStats();
-  }, [contextUser, navigate]);
-
-  // Re-fetch stats when component receives focus (when navigating back)
-  useEffect(() => {
-    const handleFocus = () => {
-      if (contextUser && contextUser.role === 'admin') {
-        fetchDashboardStats();
-      }
-    };
-
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [contextUser]);
+  }, [contextUser, navigate, location]); // Added location to re-fetch when navigating back
 
   const fetchDashboardStats = async () => {
     try {
