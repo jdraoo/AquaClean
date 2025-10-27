@@ -254,6 +254,7 @@ test_plan:
     - "Dashboard Back Navigation"
   stuck_tasks:
     - "Google Maps API Error Handling"
+    - "Dashboard Back Navigation"
   test_all: false
   test_priority: "high_first"
 
