@@ -294,7 +294,7 @@ const AdminBookings = () => {
                       <p className="text-xs text-gray-500">{booking.package_type} cleaning</p>
                     </div>
 
-                    {!booking.assigned_technician_id && booking.status !== 'completed' && (
+                    {!booking.assigned_technician_id && booking.status !== 'completed' && booking.status !== 'cancelled' && (
                       <Button
                         size="sm"
                         className="bg-purple-600 hover:bg-purple-700"
@@ -316,6 +316,35 @@ const AdminBookings = () => {
                         data-testid="confirm-booking-btn"
                       >
                         Confirm Booking
+                      </Button>
+                    )}
+
+                    {booking.status !== 'completed' && booking.status !== 'cancelled' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                        onClick={() => {
+                          setSelectedBooking(booking);
+                          setRescheduleDate(booking.service_date);
+                          setRescheduleTime(booking.service_time);
+                          setShowRescheduleDialog(true);
+                        }}
+                        data-testid="reschedule-btn"
+                      >
+                        Reschedule
+                      </Button>
+                    )}
+
+                    {booking.status !== 'completed' && booking.status !== 'cancelled' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-red-600 text-red-600 hover:bg-red-50"
+                        onClick={() => handleCancelBooking(booking.id)}
+                        data-testid="cancel-booking-btn"
+                      >
+                        Cancel
                       </Button>
                     )}
                   </div>
