@@ -39,8 +39,10 @@ const JobExecution = () => {
   const [unableToProceed, setUnableToProceed] = useState(false);
   
   // Completion state
-  const [beforePhotos, setBeforePhotos] = useState('');
-  const [afterPhotos, setAfterPhotos] = useState('');
+  const [beforePhotos, setBeforePhotos] = useState([]);
+  const [afterPhotos, setAfterPhotos] = useState([]);
+  const [uploadingBefore, setUploadingBefore] = useState(false);
+  const [uploadingAfter, setUploadingAfter] = useState(false);
   const [signature, setSignature] = useState('');
   const [completionNotes, setCompletionNotes] = useState('');
 
