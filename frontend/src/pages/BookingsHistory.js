@@ -206,6 +206,57 @@ const BookingsHistory = () => {
           </div>
         )}
       </div>
+
+      {/* Reschedule Dialog */}
+      <Dialog open={showRescheduleDialog} onOpenChange={setShowRescheduleDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reschedule Booking</DialogTitle>
+            <DialogDescription>
+              Select a new date and time for your booking.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="reschedule-date">New Date</Label>
+              <Input
+                id="reschedule-date"
+                type="date"
+                value={rescheduleDate}
+                onChange={(e) => setRescheduleDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+            <div>
+              <Label htmlFor="reschedule-time">New Time</Label>
+              <Select value={rescheduleTime} onValueChange={setRescheduleTime}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select time" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="09:00">9:00 AM</SelectItem>
+                  <SelectItem value="10:00">10:00 AM</SelectItem>
+                  <SelectItem value="11:00">11:00 AM</SelectItem>
+                  <SelectItem value="12:00">12:00 PM</SelectItem>
+                  <SelectItem value="13:00">1:00 PM</SelectItem>
+                  <SelectItem value="14:00">2:00 PM</SelectItem>
+                  <SelectItem value="15:00">3:00 PM</SelectItem>
+                  <SelectItem value="16:00">4:00 PM</SelectItem>
+                  <SelectItem value="17:00">5:00 PM</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRescheduleDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleReschedule} className="bg-teal-600 hover:bg-teal-700">
+              Reschedule
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
