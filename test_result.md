@@ -210,6 +210,21 @@ frontend:
         agent: "testing"
         comment: "Dashboard with NotificationSettings integration tested successfully. Component renders correctly on authenticated dashboard and displays appropriate notification permission status."
 
+  - task: "Dashboard Back Navigation"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/Dashboard.js, AdminDashboard.js, FieldDashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported: 'from the booking management page back link doesnt show any page, need to refresh the page to see the page'"
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed by adding useLocation dependency to useEffect hooks in Dashboard, AdminDashboard, and FieldDashboard. This ensures components re-fetch data when navigating back. Ready for testing."
+
   - task: "Google Maps API Error Handling"
     implemented: true
     working: false
