@@ -12,13 +12,14 @@ const API = `${BACKEND_URL}/api`;
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useContext(AuthContext);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchBookings();
-  }, []);
+  }, [location]); // Re-fetch when navigating back
 
   const fetchBookings = async () => {
     try {
