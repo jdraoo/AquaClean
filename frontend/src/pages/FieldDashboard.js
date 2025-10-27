@@ -12,6 +12,7 @@ const API = `${BACKEND_URL}/api`;
 
 const FieldDashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user: contextUser, logout } = useContext(AuthContext);
   const [jobs, setJobs] = useState([]);
   const [stats, setStats] = useState(null);
@@ -23,7 +24,7 @@ const FieldDashboard = () => {
       return;
     }
     fetchData();
-  }, [contextUser, navigate]);
+  }, [contextUser, navigate, location]); // Added location to re-fetch when navigating back
 
   const fetchData = async () => {
     try {
