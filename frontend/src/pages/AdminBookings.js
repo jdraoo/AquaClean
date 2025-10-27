@@ -284,6 +284,45 @@ const AdminBookings = () => {
                         </p>
                       </div>
                     )}
+
+                    {/* Show photos if completed */}
+                    {booking.status === 'completed' && (booking.before_photos?.length > 0 || booking.after_photos?.length > 0) && (
+                      <div className="mt-3 p-3 bg-gray-50 rounded">
+                        <p className="text-xs font-semibold text-gray-700 mb-2">Service Photos:</p>
+                        <div className="flex gap-2">
+                          {booking.before_photos && booking.before_photos.slice(0, 2).map((photo, index) => (
+                            <a
+                              key={`before-${index}`}
+                              href={photo}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="group"
+                            >
+                              <img
+                                src={photo}
+                                alt="Before"
+                                className="w-16 h-16 object-cover rounded border group-hover:border-purple-500"
+                              />
+                            </a>
+                          ))}
+                          {booking.after_photos && booking.after_photos.slice(0, 2).map((photo, index) => (
+                            <a
+                              key={`after-${index}`}
+                              href={photo}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="group"
+                            >
+                              <img
+                                src={photo}
+                                alt="After"
+                                className="w-16 h-16 object-cover rounded border group-hover:border-purple-500"
+                              />
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-col space-y-2 lg:w-48">
