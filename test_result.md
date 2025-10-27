@@ -277,6 +277,28 @@ agent_communication:
       - Test offline capabilities
       
       Note: Google Maps cannot be tested until user completes API setup in Google Cloud Console.
+  - agent: "main"
+    message: |
+      Fixed Dashboard Back Navigation Issue:
+      
+      ISSUE: When navigating back from booking management pages (AdminBookings, BookingsHistory, etc.), 
+      the dashboard page would appear blank and require a manual refresh to display content.
+      
+      ROOT CAUSE: Dashboard components (Dashboard, AdminDashboard, FieldDashboard) were not re-fetching 
+      data when navigating back because useEffect dependencies didn't include location changes.
+      
+      SOLUTION: Added useLocation hook from react-router-dom and included location in useEffect 
+      dependencies for all dashboard components. This ensures:
+      1. Component detects route changes when navigating back
+      2. Data is automatically re-fetched
+      3. No manual refresh needed
+      
+      CHANGES MADE:
+      - Dashboard.js: Added useLocation, updated useEffect to include location dependency
+      - AdminDashboard.js: Added useLocation, updated useEffect to include location dependency
+      - FieldDashboard.js: Added useLocation, updated useEffect to include location dependency
+      
+      Ready for testing: Navigate to bookings/booking management → click back button → verify dashboard shows content immediately.
   - agent: "testing"
     message: |
       PWA and Push Notification Testing Completed Successfully:
