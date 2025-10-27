@@ -8,7 +8,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Checkbox } from '../components/ui/checkbox';
-import { ArrowLeft, Wrench, Calendar, MapPin, User, Phone, CheckCircle2, Circle, AlertTriangle, Camera } from 'lucide-react';
+import { ArrowLeft, Wrench, Calendar, MapPin, User, Phone, CheckCircle2, Circle, AlertTriangle, Camera, X } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
 import {
   Dialog,
