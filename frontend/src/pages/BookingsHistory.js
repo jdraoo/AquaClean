@@ -130,7 +130,10 @@ const BookingsHistory = () => {
                 data-testid="booking-history-item"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="flex-1">
+                  <div 
+                    className="flex-1 cursor-pointer"
+                    onClick={() => navigate(`/booking-confirmation/${booking.id}`)}
+                  >
                     <div className="flex items-center space-x-2 mb-2">
                       <h3 className="text-lg font-semibold text-gray-900">
                         {booking.tank_type.charAt(0).toUpperCase() + booking.tank_type.slice(1)} Tank
