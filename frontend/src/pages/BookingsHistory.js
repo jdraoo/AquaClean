@@ -37,6 +37,39 @@ const BookingsHistory = () => {
     }
   };
 
+  const handleReschedule = async () => {
+    if (!rescheduleDate) {
+      toast.error('Please select a date');
+      return;
+    }
+
+    try {
+      await axios.put(`${API}/bookings/${selectedBooking.id}/reschedule`, null, {
+        params: {
+          service_date: rescheduleDate,
+          service_time: rescheduleTime
+        }
+      });
+      toast.success('Booking rescheduled successfully');
+      setShowRescheduleDialog(false);
+      fetchBookings();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to reschedule booking');
+    }
+  };
+
+  const handleCancelBooking = async (bookingId) => {
+    if (!confirm('Are you sure you want to cancel this booking?')) return;
+
+    try {
+      await axios.delete(`${API}/bookings/${bookingId}`);
+      toast.success('Booking cancelled successfully');
+      fetchBookings();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to cancel booking');
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'confirmed':
