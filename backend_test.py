@@ -12,7 +12,7 @@ import random
 import string
 
 class TankHygieneAPITester:
-    def __init__(self, base_url="https://aquatrack-37.preview.emergentagent.com"):
+    def __init__(self, base_url="https://sump-solution.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.token = None

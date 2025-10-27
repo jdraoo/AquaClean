@@ -6,7 +6,7 @@ Script to create staff users (Field Team and Admin) for AquaClean platform
 import requests
 import json
 
-API_URL = "https://aquatrack-37.preview.emergentagent.com/api"
+API_URL = "https://sump-solution.preview.emergentagent.com/api"
 
 def create_field_team(name, email, phone, employee_id, password):
     """Create a field team member"""
