@@ -209,50 +209,51 @@ const BookingsHistory = () => {
 
       {/* Reschedule Dialog */}
       <Dialog open={showRescheduleDialog} onOpenChange={setShowRescheduleDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Reschedule Booking</DialogTitle>
             <DialogDescription>
-              Select a new date and time for your booking.
+              Change the service date and time for your booking
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="reschedule-date">New Date</Label>
-              <Input
-                id="reschedule-date"
-                type="date"
-                value={rescheduleDate}
-                onChange={(e) => setRescheduleDate(e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
-              />
+          {selectedBooking && (
+            <div className="space-y-4">
+              <div className="p-3 bg-teal-50 rounded">
+                <p className="text-sm font-medium text-teal-900">Current Schedule</p>
+                <p className="text-sm text-teal-700">
+                  {selectedBooking.service_date} at {selectedBooking.service_time}
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="customer-reschedule-date">New Service Date</Label>
+                <Input
+                  id="customer-reschedule-date"
+                  type="date"
+                  value={rescheduleDate}
+                  onChange={(e) => setRescheduleDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  data-testid="customer-reschedule-date-input"
+                />
+              </div>
+              <div>
+                <Label htmlFor="customer-reschedule-time">New Service Time</Label>
+                <Select value={rescheduleTime} onValueChange={setRescheduleTime}>
+                  <SelectTrigger data-testid="customer-reschedule-time-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="09:00">9:00 AM - 12:00 PM</SelectItem>
+                    <SelectItem value="12:00">12:00 PM - 3:00 PM</SelectItem>
+                    <SelectItem value="15:00">3:00 PM - 6:00 PM</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="reschedule-time">New Time</Label>
-              <Select value={rescheduleTime} onValueChange={setRescheduleTime}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select time" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="09:00">9:00 AM</SelectItem>
-                  <SelectItem value="10:00">10:00 AM</SelectItem>
-                  <SelectItem value="11:00">11:00 AM</SelectItem>
-                  <SelectItem value="12:00">12:00 PM</SelectItem>
-                  <SelectItem value="13:00">1:00 PM</SelectItem>
-                  <SelectItem value="14:00">2:00 PM</SelectItem>
-                  <SelectItem value="15:00">3:00 PM</SelectItem>
-                  <SelectItem value="16:00">4:00 PM</SelectItem>
-                  <SelectItem value="17:00">5:00 PM</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowRescheduleDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleReschedule} className="bg-teal-600 hover:bg-teal-700">
-              Reschedule
+            <Button variant="outline" onClick={() => setShowRescheduleDialog(false)}>Cancel</Button>
+            <Button onClick={handleReschedule} className="bg-teal-600 hover:bg-teal-700" data-testid="customer-confirm-reschedule-btn">
+              Confirm Reschedule
             </Button>
           </DialogFooter>
         </DialogContent>
