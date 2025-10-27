@@ -507,26 +507,99 @@ const JobExecution = () => {
             <DialogTitle>Complete Job</DialogTitle>
             <DialogDescription>Provide final documentation and customer signature</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-[60vh] overflow-y-auto">
             <div>
-              <Label htmlFor="before-photos">Before Photos (comma-separated URLs)</Label>
-              <Input
-                id="before-photos"
-                placeholder="https://example.com/photo1.jpg, https://example.com/photo2.jpg"
-                value={beforePhotos}
-                onChange={(e) => setBeforePhotos(e.target.value)}
-                data-testid="before-photos-input"
-              />
+              <Label>Before Photos *</Label>
+              <div className="mt-2 space-y-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => handleImageUpload(e, 'before')}
+                  className="hidden"
+                  id="before-photos-input"
+                  disabled={uploadingBefore}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => document.getElementById('before-photos-input').click()}
+                  disabled={uploadingBefore}
+                  data-testid="upload-before-btn"
+                >
+                  <Camera className="mr-2 h-4 w-4" />
+                  {uploadingBefore ? 'Uploading...' : 'Upload Before Photos'}
+                </Button>
+                
+                {beforePhotos.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    {beforePhotos.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img 
+                          src={url} 
+                          alt={`Before ${index + 1}`} 
+                          className="w-full h-24 object-cover rounded border"
+                        />
+                        <button
+                          onClick={() => removePhoto('before', index)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="text-xs text-gray-500">{beforePhotos.length} photo(s) uploaded</p>
+              </div>
             </div>
+            
             <div>
-              <Label htmlFor="after-photos">After Photos (comma-separated URLs)</Label>
-              <Input
-                id="after-photos"
-                placeholder="https://example.com/photo1.jpg, https://example.com/photo2.jpg"
-                value={afterPhotos}
-                onChange={(e) => setAfterPhotos(e.target.value)}
-                data-testid="after-photos-input"
-              />
+              <Label>After Photos *</Label>
+              <div className="mt-2 space-y-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => handleImageUpload(e, 'after')}
+                  className="hidden"
+                  id="after-photos-input"
+                  disabled={uploadingAfter}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => document.getElementById('after-photos-input').click()}
+                  disabled={uploadingAfter}
+                  data-testid="upload-after-btn"
+                >
+                  <Camera className="mr-2 h-4 w-4" />
+                  {uploadingAfter ? 'Uploading...' : 'Upload After Photos'}
+                </Button>
+                
+                {afterPhotos.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    {afterPhotos.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img 
+                          src={url} 
+                          alt={`After ${index + 1}`} 
+                          className="w-full h-24 object-cover rounded border"
+                        />
+                        <button
+                          onClick={() => removePhoto('after', index)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="text-xs text-gray-500">{afterPhotos.length} photo(s) uploaded</p>
+              </div>
             </div>
             <div>
               <Label htmlFor="signature">Customer Signature</Label>
