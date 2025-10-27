@@ -400,6 +400,61 @@ const AdminBookings = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Reschedule Dialog */}
+      <Dialog open={showRescheduleDialog} onOpenChange={setShowRescheduleDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reschedule Booking</DialogTitle>
+            <DialogDescription>
+              Change the service date and time for this booking
+            </DialogDescription>
+          </DialogHeader>
+          {selectedBooking && (
+            <div className="space-y-4">
+              <div className="p-3 bg-gray-50 rounded">
+                <p className="text-sm font-medium text-gray-900">Booking Details</p>
+                <p className="text-sm text-gray-600">
+                  {selectedBooking.tank_type} - Customer: {selectedBooking.customer?.name}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Current: {selectedBooking.service_date} at {selectedBooking.service_time}
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="reschedule-date">New Service Date</Label>
+                <Input
+                  id="reschedule-date"
+                  type="date"
+                  value={rescheduleDate}
+                  onChange={(e) => setRescheduleDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  data-testid="reschedule-date-input"
+                />
+              </div>
+              <div>
+                <Label htmlFor="reschedule-time">New Service Time</Label>
+                <Select value={rescheduleTime} onValueChange={setRescheduleTime}>
+                  <SelectTrigger data-testid="reschedule-time-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="09:00">9:00 AM - 12:00 PM</SelectItem>
+                    <SelectItem value="12:00">12:00 PM - 3:00 PM</SelectItem>
+                    <SelectItem value="15:00">3:00 PM - 6:00 PM</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRescheduleDialog(false)}>Cancel</Button>
+            <Button onClick={handleReschedule} className="bg-blue-600 hover:bg-blue-700" data-testid="confirm-reschedule-btn">
+              Reschedule Booking
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
