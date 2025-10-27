@@ -370,6 +370,51 @@ async def get_booking(booking_id: str, user_id: str = Depends(get_current_user))
     
     return booking
 
+@api_router.put("/bookings/{booking_id}/reschedule")
+async def reschedule_booking_customer(
+    booking_id: str,
+    service_date: str,
+    service_time: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Customer can reschedule their own booking"""
+    booking = await db.bookings.find_one({"id": booking_id, "user_id": user_id})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    if booking['status'] in ['completed', 'cancelled']:
+        raise HTTPException(status_code=400, detail="Cannot reschedule completed or cancelled bookings")
+    
+    await db.bookings.update_one(
+        {"id": booking_id, "user_id": user_id},
+        {"$set": {
+            "service_date": service_date,
+            "service_time": service_time
+        }}
+    )
+    
+    return {"message": "Booking rescheduled successfully"}
+
+@api_router.delete("/bookings/{booking_id}")
+async def cancel_booking_customer(
+    booking_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Customer can cancel their own booking"""
+    booking = await db.bookings.find_one({"id": booking_id, "user_id": user_id})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    if booking['status'] in ['completed']:
+        raise HTTPException(status_code=400, detail="Cannot cancel completed bookings")
+    
+    await db.bookings.update_one(
+        {"id": booking_id, "user_id": user_id},
+        {"$set": {"status": "cancelled"}}
+    )
+    
+    return {"message": "Booking cancelled successfully"}
+
 # Payment Routes
 @api_router.post("/payments/create-order")
 async def create_payment_order(data: PaymentOrder, user_id: str = Depends(get_current_user)):
