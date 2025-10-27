@@ -227,6 +227,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "PARTIAL SUCCESS: Customer dashboard back navigation works correctly - content displays immediately without refresh. ISSUE FOUND: Admin dashboard back navigation fails with routing error 'No routes matched location /admin/dashboard'. The admin back button navigates to /admin/dashboard but this route doesn't exist in App.js routing. Admin should navigate back to /dashboard (unified dashboard). Root cause: AdminBookings back button uses navigate('/admin/dashboard') but should use navigate('/dashboard')."
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed routing issue in admin pages. Changed AdminBookings.js and AdminUsers.js back button navigation from '/admin/dashboard' to '/dashboard' (unified dashboard). Ready for re-testing."
 
   - task: "Google Maps API Error Handling"
     implemented: true
