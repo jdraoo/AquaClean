@@ -257,10 +257,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Dashboard Back Navigation"
+    - "Google Maps API Error Handling"
   stuck_tasks:
     - "Google Maps API Error Handling"
-    - "Dashboard Back Navigation"
   test_all: false
   test_priority: "high_first"
 
