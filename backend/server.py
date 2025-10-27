@@ -800,6 +800,37 @@ async def get_field_stats(team_id: str = Depends(get_current_field_team)):
         "in_progress": in_progress
     }
 
+@api_router.post("/field/upload-image")
+async def upload_image(
+    file: UploadFile = File(...),
+    team_id: str = Depends(get_current_field_team)
+):
+    """Upload job photo (before/after)"""
+    try:
+        # Read file content
+        contents = await file.read()
+        
+        # Option 1: Use Cloudinary if configured
+        if os.environ.get('CLOUDINARY_CLOUD_NAME'):
+            result = cloudinary.uploader.upload(
+                contents,
+                folder="aquaclean/jobs",
+                resource_type="auto"
+            )
+            return {"url": result['secure_url']}
+        
+        # Option 2: Convert to base64 data URL (for demo/MVP)
+        else:
+            base64_image = base64.b64encode(contents).decode('utf-8')
+            # Determine mime type
+            mime_type = file.content_type or 'image/jpeg'
+            data_url = f"data:{mime_type};base64,{base64_image}"
+            return {"url": data_url}
+            
+    except Exception as e:
+        logging.error(f"Image upload failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Image upload failed")
+
 # Admin Models
 class AdminRegister(BaseModel):
     email: EmailStr
