@@ -23,8 +23,11 @@ const AdminBookings = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showAssignDialog, setShowAssignDialog] = useState(false);
+  const [showRescheduleDialog, setShowRescheduleDialog] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedTechnician, setSelectedTechnician] = useState('');
+  const [rescheduleDate, setRescheduleDate] = useState('');
+  const [rescheduleTime, setRescheduleTime] = useState('09:00');
 
   useEffect(() => {
     fetchData();
