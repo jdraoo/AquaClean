@@ -248,7 +248,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Google Maps API Error Handling"
+    - "Dashboard Back Navigation"
   stuck_tasks:
     - "Google Maps API Error Handling"
   test_all: false
