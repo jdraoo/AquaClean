@@ -4,7 +4,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { MapPin, Search } from 'lucide-react';
+import { MapPin, Search, AlertTriangle } from 'lucide-react';
 
 const libraries = ['places'];
 
@@ -12,6 +12,7 @@ const MapPicker = ({ onLocationSelect, initialLocation }) => {
   const [map, setMap] = useState(null);
   const [marker, setMarker] = useState(initialLocation || { lat: 17.385044, lng: 78.486671 }); // Hyderabad default
   const [address, setAddress] = useState('');
+  const [mapError, setMapError] = useState(null);
   const autocompleteRef = useRef(null);
 
   const mapContainerStyle = {
