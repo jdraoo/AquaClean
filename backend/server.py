@@ -38,6 +38,13 @@ razorpay_client = razorpay.Client(
     auth=(os.environ.get('RAZORPAY_KEY_ID', ''), os.environ.get('RAZORPAY_KEY_SECRET', ''))
 )
 
+# Configure Cloudinary (optional - for production image hosting)
+cloudinary.config(
+    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME', ''),
+    api_key=os.environ.get('CLOUDINARY_API_KEY', ''),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET', '')
+)
+
 # Create the main app
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
