@@ -155,15 +155,50 @@ const BookingsHistory = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="text-left sm:text-right">
+                  <div className="text-left sm:text-right space-y-2">
                     <p className="text-2xl font-bold text-teal-600">
                       ₹{(booking.amount / 100).toFixed(2)}
                     </p>
-                    <p className={`text-xs mt-1 ${
+                    <p className={`text-xs ${
                       booking.payment_status === 'completed' ? 'text-green-600' : 'text-yellow-600'
                     }`}>
                       {booking.payment_status === 'completed' ? 'Paid' : 'Payment ' + booking.payment_status}
                     </p>
+                    
+                    {/* Action Buttons for non-completed bookings */}
+                    {booking.status !== 'completed' && booking.status !== 'cancelled' && (
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedBooking(booking);
+                            setRescheduleDate(booking.service_date);
+                            setRescheduleTime(booking.service_time);
+                            setShowRescheduleDialog(true);
+                          }}
+                          data-testid="reschedule-booking-btn"
+                        >
+                          <Edit className="h-3 w-3 mr-1" />
+                          Reschedule
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-red-600 text-red-600 hover:bg-red-50"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCancelBooking(booking.id);
+                          }}
+                          data-testid="cancel-booking-btn"
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Card>
