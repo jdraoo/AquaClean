@@ -113,15 +113,15 @@ const JobExecution = () => {
   };
 
   const handleCompleteJob = async () => {
-    if (!beforePhotos.trim() || !afterPhotos.trim() || !signature.trim()) {
-      toast.error('Please provide all required information');
+    if (beforePhotos.length === 0 || afterPhotos.length === 0 || !signature.trim()) {
+      toast.error('Please upload before/after photos and provide signature');
       return;
     }
 
     try {
       await axios.post(`${API}/field/jobs/${jobId}/complete`, {
-        before_photo_urls: beforePhotos.split(',').map(url => url.trim()),
-        after_photo_urls: afterPhotos.split(',').map(url => url.trim()),
+        before_photo_urls: beforePhotos,
+        after_photo_urls: afterPhotos,
         customer_signature: signature,
         notes: completionNotes
       });
@@ -129,6 +129,54 @@ const JobExecution = () => {
       navigate('/dashboard');
     } catch (error) {
       toast.error('Failed to complete job');
+    }
+  };
+
+  const handleImageUpload = async (event, type) => {
+    const files = Array.from(event.target.files);
+    if (files.length === 0) return;
+
+    const uploadType = type === 'before' ? setUploadingBefore : setUploadingAfter;
+    uploadType(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const uploadedUrls = [];
+
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await axios.post(`${API}/field/upload-image`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        uploadedUrls.push(response.data.url);
+      }
+
+      if (type === 'before') {
+        setBeforePhotos([...beforePhotos, ...uploadedUrls]);
+      } else {
+        setAfterPhotos([...afterPhotos, ...uploadedUrls]);
+      }
+
+      toast.success(`${files.length} photo(s) uploaded successfully`);
+    } catch (error) {
+      toast.error('Failed to upload photos');
+      console.error(error);
+    } finally {
+      uploadType(false);
+    }
+  };
+
+  const removePhoto = (type, index) => {
+    if (type === 'before') {
+      setBeforePhotos(beforePhotos.filter((_, i) => i !== index));
+    } else {
+      setAfterPhotos(afterPhotos.filter((_, i) => i !== index));
     }
   };
 
