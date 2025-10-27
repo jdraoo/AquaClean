@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Droplets, Calendar, History, User, LogOut, Sparkles, Shield, Clock, MapPin } from 'lucide-react';
 import { AuthContext } from '../App';
+import NotificationSettings from '../components/NotificationSettings';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
