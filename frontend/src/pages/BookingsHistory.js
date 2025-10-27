@@ -17,6 +17,10 @@ const BookingsHistory = () => {
   const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showRescheduleDialog, setShowRescheduleDialog] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [rescheduleDate, setRescheduleDate] = useState('');
+  const [rescheduleTime, setRescheduleTime] = useState('09:00');
 
   useEffect(() => {
     fetchBookings();
